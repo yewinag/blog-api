@@ -1,26 +1,57 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Post } from './schemas/post.schema';
+import * as mongoose from 'mongoose';
 
 @Injectable()
 export class PostsService {
-  create(createPostDto: CreatePostDto) {
-    return 'This action adds a new post';
+  constructor(
+    @InjectModel(Post.name)
+    private postModel: mongoose.Model<Post>,
+  ) {}
+
+  async create(createPostDto: CreatePostDto): Promise<Post> {
+    const post = await this.postModel.create(createPostDto);
+    return post;
   }
 
-  findAll() {
-    return `This action returns all posts`;
+  async findAll(): Promise<Post[]> {
+    const posts = await this.postModel.find();
+    return posts;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} post`;
+  async findOne(id: string): Promise<Post> {
+    const isValidId = mongoose.isValidObjectId(id);
+    if (!isValidId) {
+      throw new BadRequestException('id not found');
+    }
+    const post = await this.postModel.findById(id);
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+    return post;
   }
 
-  update(id: number, updatePostDto: UpdatePostDto) {
-    return `This action updates a #${id} post`;
+  async update(id: string, updatePostDto: UpdatePostDto): Promise<Post> {
+    const isValidId = mongoose.isValidObjectId(id);
+    if (!isValidId) {
+      throw new BadRequestException('id not found');
+    }
+    const post = await this.postModel.findByIdAndUpdate(id, updatePostDto);
+    if (!post) {
+      throw new NotFoundException('something went wrong');
+    }
+    return post;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} post`;
+  async remove(id: string): Promise<{ deleted: Boolean }> {
+    await this.postModel.findByIdAndDelete(id);
+    return { deleted: true };
   }
 }
