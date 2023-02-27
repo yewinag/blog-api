@@ -9,6 +9,7 @@ export class UsersService {
   }
 
   findAll() {
+    console.log('okd');
     return `This action returns all users`;
   }
 
