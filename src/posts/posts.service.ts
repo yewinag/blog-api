@@ -2,12 +2,15 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  UseGuards,
 } from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Post } from './schemas/post.schema';
 import * as mongoose from 'mongoose';
+import { AuthGuard } from '@nestjs/passport';
+import { UserRoles } from 'src/auth/schema/user.schema';
 
 @Injectable()
 export class PostsService {
